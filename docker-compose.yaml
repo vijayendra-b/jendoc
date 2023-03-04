@@ -1,0 +1,58 @@
+version: "3"
+services:
+  hub:
+    image: selenium/hub:4.6.0
+    ports:
+      - "4444:4444"
+  chrome:
+    image: selenium/node-chrome:4.6.0
+    shm_size: '2gb'
+    depends_on:
+      - hub
+    environment:
+      - SE_EVENT_BUS_HOST=hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
+      - SCREEN_DEPTH=24
+  firefox:
+    image: selenium/node-firefox:4.6.0
+    shm_size: '2gb'
+    depends_on:
+      - hub
+    environment:
+      - SE_EVENT_BUS_HOST=hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
+      - SCREEN_DEPTH=24
+  edge:
+    image: selenium/node-edge:4.6.0
+    shm_size: '2gb'
+    depends_on:
+      - hub
+    environment:
+      - SE_EVENT_BUS_HOST=hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1080
+      - SCREEN_DEPTH=24
+  tests:
+    depends_on:
+      - chrome # should be same as the BROWSER under 'environment'
+    image: vijayendra1/saucedemo
+    working_dir: /usr/automation
+    environment:
+      - SE_EVENT_BUS_HOST=hub
+      - MODULE_NAME=testcases/saucedemologin/ # for specific test script e.g. TestCases/TeamManagePage/tourpoints/test_tourpoints_when_members_in_team.py
+      - BROWSER=chrome
+      - CI_URL=https://www.saucedemo.com/
+      - N_PROCESSES=1 # number of processes - e.g. 2 if --scale chrome=2 in docker-compose up command
+    #user: 2000:2000
+    volumes:
+      - ./test_report:/usr/automation/test_report #:rw
+# volumes:
+#     allure-results:
